@@ -1,5 +1,6 @@
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 import { Redis } from "ioredis";
+import { User, createUser } from "./user";
 
 const pub = new Redis({
     host: 'redis-1b7c0c97-chat-app-67.a.aivencloud.com',
@@ -17,6 +18,8 @@ const sub = new Redis({
 
 class SocketService {
     private _io: Server;
+    private _socketCount: number = 0;
+    private _allUsers: User[] = [];
 
     constructor() {
         this._io = new Server({
@@ -32,8 +35,27 @@ class SocketService {
         console.log("Init Socket Listeners...");
         
         const io = this._io;
-        io.on("connect", (socket) => {
+        io.on("connect", (socket: Socket) => {
+            this._socketCount++; // Increment the socket count when a new socket connects
             console.log("New socket connected", socket.id);
+
+            // Generate a new user and store it
+            const newUser = createUser(socket.id);
+            this._allUsers.push(newUser);
+
+            io.emit("userListchange", JSON.stringify(this._allUsers));
+
+            socket.on("disconnect", () => {
+                // DONT KILL THE USER WHEN SOCKET DISCONNECTED 
+                // KILL HIM WHEN ALL SOCKETS ARE CLOSED
+                this._socketCount--; // Decrement the socket count when a socket disconnects
+                console.log("Socket disconnected", socket.id);
+
+                // Remove the user from the array on disconnect
+                this._allUsers = this._allUsers.filter(user => user.socketId !== socket.id);
+                io.emit("userListchange", JSON.stringify(this._allUsers));
+            });
+
             socket.on("event:message", async({socketId, message}) => {
                 // console.log("New Message Received:", [socketId, message]);
                 // Publish this message to redis
@@ -50,6 +72,14 @@ class SocketService {
 
     get io() {
         return this._io;
+    }
+
+    get socketCount() {
+        return this._socketCount;
+    }
+
+    get allUsers() {
+        return this._allUsers;
     }
 }
 
