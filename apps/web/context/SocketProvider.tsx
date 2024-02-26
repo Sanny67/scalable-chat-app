@@ -14,6 +14,7 @@ interface Avatar {
 }
 export interface User {
     socketId: string;
+    active: boolean;
     avatar: Avatar;
 }
 

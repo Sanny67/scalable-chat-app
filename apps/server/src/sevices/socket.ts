@@ -51,8 +51,20 @@ class SocketService {
                 this._socketCount--; // Decrement the socket count when a socket disconnects
                 console.log("Socket disconnected", socket.id);
 
+                if(this._socketCount === 0){
+                    this._allUsers = [];
+                    io.emit("userListchange", JSON.stringify(this._allUsers));
+                }
+
                 // Remove the user from the array on disconnect
-                this._allUsers = this._allUsers.filter(user => user.socketId !== socket.id);
+                this._allUsers = this._allUsers.map(user => {
+                    if (user.socketId === socket.id) {
+                        return {
+                            ...user,
+                            active: false
+                        };
+                    } else return user;
+                });
                 io.emit("userListchange", JSON.stringify(this._allUsers));
             });
 

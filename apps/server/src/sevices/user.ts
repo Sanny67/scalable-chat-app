@@ -7,6 +7,7 @@ export interface Avatar {
 
 export interface User {
     socketId: string;
+    active: boolean;
     avatar: Avatar;
 }
 
@@ -66,16 +67,11 @@ const getRandomInt = (min: number, max: number): number => {
 };
 
 function getRandomColor() {
-    // Generate random values for red, green, and blue components
-    const red = Math.floor(Math.random() * 256);
-    const green = Math.floor(Math.random() * 256);
-    const blue = Math.floor(Math.random() * 256);
-    
-    // Construct the color string in hexadecimal format
-    const color = `#${red.toString(16)}${green.toString(16)}${blue.toString(16)}`;
-    
-    return color;
-};
+    const colors = ['#ff00ff', '#800080', '#135ca4', '#0074e6', '#00b2d6', '#82aeda', '#73e6da', '#41c074', '#fff200', '#78be20', '#968e00', '#3d6d00', '#4e9154', '#8a0000', '#ff0000', '#da3f5a', '#da5656', '#a55e2a', '#ffa500', '#f5deb3', '#ffc0cb'];
+    const randomIndex = Math.floor(Math.random() * colors.length);
+  
+    return colors[randomIndex];
+  }
 
 const generateAvatar = (): Avatar => {
     let uniqueName: string;
@@ -95,5 +91,5 @@ const generateAvatar = (): Avatar => {
 
 export const createUser = (socketId: string): User => {
     const uniqueAvatar = generateAvatar();
-    return {socketId, avatar: uniqueAvatar};
+    return {socketId, active: true, avatar: uniqueAvatar};
 };

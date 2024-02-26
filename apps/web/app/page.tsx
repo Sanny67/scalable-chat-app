@@ -1,20 +1,23 @@
 'use client'
 import { useEffect, useState } from 'react';
 import { User, useSocket } from '../context/SocketProvider';
-import classes from './page.module.css';
-import ReactDOM from 'react-dom';
+import useStyles from './styles';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as solidIcons from '@fortawesome/free-solid-svg-icons';
-import { Avatar, Box, Container, Grid, IconButton, Paper, TextField } from '@mui/material';
+import { Avatar, Box, CircularProgress, Grid, IconButton, Paper, TextField, Tooltip } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
-import useStyles from './styles';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 
 // Import the dark mode theme from Material-UI
 import { createTheme, ThemeProvider, darken } from '@mui/material/styles';
+import Loader from './components/Loader';
+import ShowMessage from './components/ShowMessage';
+import Features from './components/Features';
 
 const emptyUser: User = {
   socketId: "",
+  active: false,
   avatar: {
       name: "",
       icon: "",
@@ -41,13 +44,18 @@ const theme = createTheme({
 
 export default function Page() {
   const { sendMessage, messages, socket, users } = useSocket();
+  const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [showFeatures, setShowFeatures] = useState(false);
+
   const classes = useStyles();
   const currentSocketId = socket?.id || "";
 
   useEffect(()=>{
-    console.log("users", users);
-  }, [users]);
+    setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+  }, []);
 
   const getSender = (socketId: string): User => {
     const foundUser: User = users.find(user => user.socketId === socketId) ?? emptyUser;
@@ -60,95 +68,109 @@ export default function Page() {
     sendMessage(message);
     setMessage("");
   }
-  interface ShowMessageProps {
-    socketId: string;
-    message: string;
-    user: User;
-  }
 
-  const ShowMessage: React.FC<ShowMessageProps> = ({ socketId, message, user }) => {
-    const messageBlockStyle = {display:'flex', alignItems: 'center'};
+  const loaderData = {
+    size: 200,
+  };
 
-    return (
-      <div
-        key={socketId}
-        style={{display: 'flex', justifyContent: currentSocketId == socketId ? 'right' : 'left'}}
-      >
-        {currentSocketId == socketId ? 
-          <div style={messageBlockStyle}>
-            <p style={{ marginRight: '10px'}}>{message}</p>
-            <Avatar className={classes.mediumAvatar} sx={{ backgroundColor: user?.avatar?.color }}>
-              <FontAwesomeIcon icon={solidIcons[user?.avatar?.icon as keyof typeof solidIcons]} />
-            </Avatar>
-          </div> :
-          <div style={messageBlockStyle}>
-            <Avatar className={classes.mediumAvatar} sx={{ backgroundColor: user?.avatar?.color }}>
-              <FontAwesomeIcon icon={solidIcons[user?.avatar?.icon as keyof typeof solidIcons]} />
-            </Avatar>
-            <p style={{ marginLeft: '10px'}}>{message}</p>
-          </div>
-        }
-      </div>
-    )
-  }
+  // <Loader {...loaderData} />
+  // <CircularProgress size={150}/>
+  
   return (
     <ThemeProvider theme={theme}>
-        <Paper className={classes.paper} elevation={3}>
-          <Grid container sx={{height: '100%'}}>
-            <Grid item xs={3} className={classes.usersSection}>
-              <h4 style={{}}>Messages</h4>
-              {users.map((user) => (
-                user.socketId !== currentSocketId && (
-                  <div key={user.socketId} className={classes.userDisplay}>
-                    <Avatar className={classes.largeAvatar} sx={{ backgroundColor: user?.avatar?.color }}>
-                      <FontAwesomeIcon icon={solidIcons[user?.avatar?.icon as keyof typeof solidIcons]} />
-                    </Avatar>
-                    <p>{user.avatar.name}</p>
+        { loading ? <CircularProgress size={150}/> : 
+          <>
+            <Paper className={classes.paper} elevation={3}>
+              <Grid container sx={{height: '100%'}}>
+                <Grid item xs={3} className={classes.usersSection}>
+                  <h4>Messages</h4>
+                  <div className={classes.activeUsers}>
+                    {users.map((user) => (
+                      (user.socketId !== currentSocketId && user.active) && (
+                        <div key={user.socketId} className={classes.userDisplay}>
+                          <Avatar className={classes.largeAvatar} sx={{ backgroundColor: user?.avatar?.color }}>
+                            <FontAwesomeIcon icon={solidIcons[user?.avatar?.icon as keyof typeof solidIcons]} />
+                          </Avatar>
+                          <p>{user.avatar.name}</p>
+                        </div>
+                      )
+                    ))}
                   </div>
-                )
-              ))}
-            </Grid>
-            <Grid item xs={9} className={classes.messagesSection}>
-              <Box className={classes.messagesContainer}>
-                {/* All messages */}
-                {messages.map(({socketId, message}) => {
-                  const sender: User = currentSocketId === socketId ? currentUser : getSender(socketId) ?? emptyUser;
-                  return (
-                    <ShowMessage key={socketId} socketId={socketId} message={message} user={sender}/>
-                  )
-                })}
-                {/* All messages */}
-              </Box>
-              <TextField
-                fullWidth
-                // multiline
-                // maxRows={4}
-                value={message}
-                id="outlined-basic"
-                variant="outlined"
-                placeholder="Type message here"
-                className={classes.textField}
-                onChange={(e) => setMessage(e.target.value)}
-                sx={{ flexShrink: 0 }}
-                inputProps={{
-                  className: classes.scrollContainer,
-                }}
-                InputProps={{
-                  endAdornment: (
-                    <IconButton
-                      type="submit"
-                      aria-label="send"
-                      onClick={(e) => sendMsg()}
-                      sx={{ height: '60px', width: '60px' }}
+                </Grid>
+                <Grid item xs={9} className={classes.messagesSection}>
+                  <Box className={classes.navBar}>
+                    { currentUser !== null && <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Avatar className={classes.largeAvatar} sx={{ backgroundColor: currentUser?.avatar?.color }}>
+                          <FontAwesomeIcon icon={solidIcons[currentUser?.avatar?.icon as keyof typeof solidIcons]} />
+                        </Avatar>
+                        <p style={{ marginLeft:"10px" }}>{currentUser.avatar.name} (You)</p>
+                    </Box> }
+                    <Tooltip
+                      title="See App Features"
+                      slotProps={{ tooltip: { sx: { fontSize: '1.15rem' } } }}
                     >
-                      <SendIcon style={{ fontSize: '28px' }}/>
-                    </IconButton>
-                  )
-                }}
-              />
-            </Grid>
-          </Grid>
-        </Paper>
+                      <IconButton
+                        sx={{ height: '60px', width: '60px' }}
+                        onClick={() => setShowFeatures(true)}
+                      >
+                        <InfoOutlinedIcon style={{ fontSize: '28px' }}/>
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                  <Box className={classes.messagesContainer}>
+                    {/* All messages */}
+                    {messages.map(({socketId, message}) => {
+                      const sender: User = currentSocketId === socketId ? currentUser : getSender(socketId) ?? emptyUser;
+                      return (
+                        <ShowMessage
+                          user={sender}
+                          key={socketId}
+                          message={message}
+                          socketId={socketId}
+                          currentSocketId={currentSocketId}
+                        />
+                      )
+                    })}
+                    {/* All messages */}
+                  </Box>
+                  <TextField
+                    fullWidth
+                    // multiline
+                    // maxRows={4}
+                    value={message}
+                    id="outlined-basic"
+                    variant="outlined"
+                    placeholder="Type message here"
+                    className={classes.textField}
+                    onChange={(e) => setMessage(e.target.value)}
+                    sx={{ flexShrink: 0 }}
+                    inputProps={{
+                      className: classes.scrollContainer,
+                    }}
+                    InputProps={{
+                      endAdornment: (
+                        <Tooltip
+                          title="Send"
+                          slotProps={{ tooltip: { sx: { fontSize: '1.15rem' } } }}
+                        >
+                          <IconButton
+                            type="submit"
+                            aria-label="send"
+                            onClick={(e) => sendMsg()}
+                            sx={{ height: '60px', width: '60px' }}
+                          >
+                            <SendIcon style={{ fontSize: '28px' }}/>
+                          </IconButton>
+                        </Tooltip>
+                      )
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            </Paper>
+            <Features show={showFeatures} setShow={setShowFeatures}/>
+          </>
+        }
     </ThemeProvider>
   )
 };
