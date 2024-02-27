@@ -1,8 +1,7 @@
 import React from 'react';
 import classes from '../assets/css/page.module.css';
 import { Avatar } from '@mui/material';
-import * as solidIcons from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import AvatarIcon from './AvatarIcon';
 
 interface ShowMessageProps {
   socketId: string;
@@ -11,8 +10,9 @@ interface ShowMessageProps {
   user: {
     active: boolean;
     avatar?: {
+      name: string;
+      animal: string;
       color: string;
-      icon: string;
     }
   };
 }
@@ -34,12 +34,12 @@ const ShowMessage: React.FC<ShowMessageProps> = ({ socketId, currentSocketId, me
         <div style={messageBlockStyle}>
           <p style={messageStyle}>{message}</p>
           <Avatar className={classes.mediumAvatar} sx={{ backgroundColor: user?.avatar?.color, mt: -0.5 }}>
-            <FontAwesomeIcon icon={solidIcons[user?.avatar?.icon as keyof typeof solidIcons]} />
+            <AvatarIcon key={user?.avatar?.animal || ""} />
           </Avatar>
         </div> :
         <div style={messageBlockStyle}>
           <Avatar className={classes.mediumAvatar} sx={{ backgroundColor: user?.avatar?.color, mt: -0.5 }}>
-            <FontAwesomeIcon icon={solidIcons[user?.avatar?.icon as keyof typeof solidIcons]} />
+            <AvatarIcon key={user?.avatar?.animal || ""} />
           </Avatar>
           <p style={messageStyle}>{message}</p>
         </div>

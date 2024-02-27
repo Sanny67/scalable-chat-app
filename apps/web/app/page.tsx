@@ -11,16 +11,17 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 // Import the dark mode theme from Material-UI
 import { createTheme, ThemeProvider, darken } from '@mui/material/styles';
-import Loader from './components/Loader';
+// import Loader from './components/Loader';
 import ShowMessage from './components/ShowMessage';
 import Features from './components/Features';
+import AvatarIcon from './components/AvatarIcon';
 
 const emptyUser: User = {
   socketId: "",
   active: false,
   avatar: {
       name: "",
-      icon: "",
+      animal: "",
       color: ""
   }
 };
@@ -89,7 +90,8 @@ export default function Page() {
                       (user.socketId !== currentSocketId && user.active) && (
                         <div key={user.socketId} className={classes.userDisplay}>
                           <Avatar className={classes.largeAvatar} sx={{ backgroundColor: user?.avatar?.color }}>
-                            <FontAwesomeIcon icon={solidIcons[user?.avatar?.icon as keyof typeof solidIcons]} />
+                            <AvatarIcon key={user?.avatar?.animal} />
+                            {/* <FontAwesomeIcon icon={solidIcons[user?.avatar?.icon as keyof typeof solidIcons]} /> */}
                           </Avatar>
                           <p>{user.avatar.name}</p>
                         </div>
@@ -101,7 +103,7 @@ export default function Page() {
                   <Box className={classes.navBar}>
                     { currentUser !== null && <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <Avatar className={classes.largeAvatar} sx={{ backgroundColor: currentUser?.avatar?.color }}>
-                          <FontAwesomeIcon icon={solidIcons[currentUser?.avatar?.icon as keyof typeof solidIcons]} />
+                          <AvatarIcon key={currentUser?.avatar?.animal} />
                         </Avatar>
                         <p style={{ marginLeft:"10px" }}>{currentUser.avatar.name} (You)</p>
                     </Box> }

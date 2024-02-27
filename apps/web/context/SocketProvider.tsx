@@ -9,7 +9,7 @@ interface Message {
 }
 interface Avatar {
     name: string;
-    icon: string;
+    animal: string;
     color: string;
 }
 export interface User {
@@ -44,7 +44,7 @@ export const useSocket = () => {
 export const SocketProvider: React.FC<SocketProviderProps> = ({children}) => {
 
     const [socket, setSocket] = useState<Socket>();
-    // const [user, setUser] = useState<User>({socketId: "", avatar: { name: "", icon: "", color: "" }});
+    // const [user, setUser] = useState<User>({socketId: "", avatar: { name: "", animal: "", color: "" }});
     const [messages, setMessages] = useState<Message[]>(initialMessages);
     const [users, setUsers] = useState<User[]>(initialUsers);
 

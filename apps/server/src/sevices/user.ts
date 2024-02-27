@@ -1,7 +1,7 @@
 
 export interface Avatar {
     name: string;
-    icon: string;
+    animal: string;
     color: string;
 }
 
@@ -13,18 +13,6 @@ export interface User {
 
 const generatedNames: Set<string> = new Set();
 
-const icons: string[] = [
-    "faFrog",
-    "faDragon",
-    "faOtter",
-    "faFishFins",
-    "faHippo",
-    "faCat",
-    "faDove",
-    "faSpider",
-    "faHorse",
-    "faKiwiBird",
-];
 
 const animals: string[] = [
     "Frog",
@@ -79,11 +67,10 @@ const generateAvatar = (): Avatar => {
     do {
         const randomAnimalKey = getRandomInt(0, animals.length);
         const randomAnimal = animals[randomAnimalKey];
-        const randomIcon = icons[randomAnimalKey];
         const randomColor = getRandomColor();
         const randomAdjective = adjectives[getRandomInt(0, adjectives.length)];
         uniqueName = `${randomAdjective} ${randomAnimal}`;
-        uniqueAvatar = {name: uniqueName, icon: randomIcon || "", color: randomColor};
+        uniqueAvatar = {name: uniqueName, animal: randomAnimal || "", color: randomColor};
     } while (generatedNames.has(uniqueName));
     generatedNames.add(uniqueName);
     return uniqueAvatar;
